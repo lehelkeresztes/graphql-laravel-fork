@@ -3,6 +3,8 @@
 declare(strict_types = 1);
 namespace Rebing\GraphQL\Support\AliasArguments;
 
+use Safe\Exceptions\ArrayException;
+
 class ArrayKeyChange
 {
     public function modify(array $array, array $pathKeyMappings): array
@@ -21,9 +23,15 @@ class ArrayKeyChange
      */
     private function orderPaths(array $paths): array
     {
-        \Safe\uksort($paths, function (string $a, string $b): int {
+        error_clear_last();
+
+        $result = \uksort($paths, function (string $a, string $b): int {
             return $this->pathLevels($b) <=> $this->pathLevels($a);
         });
+
+        if ($result === false) {
+            throw ArrayException::createFromPhpError();
+        }
 
         return $paths;
     }
